@@ -1,0 +1,67 @@
+---
+title: "NY Shooting"
+author: 
+date: "2023-03-15"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Project Overview
+This report analyses the shooting cases in NY in the year of 2022. Using visualizations, the primary goal is to observe and understand patterns in the data. 
+
+## Importing data
+The data use in this analysis can be found on the link <https://data.cityofnewyork.us/api/views/5ucz-vwe8/rows.csv?accessType=DOWNLOAD>.
+After importing the data to RStudio, the following coluns were remove: Longitude,New.Georeferenced.Column,X_COORD_CD,Y_COORD_CD, Latitude, LOCATION_DESC.
+
+```{r dowlond, include=FALSE}
+shooting_his <- read.csv("https://data.cityofnewyork.us/api/views/5ucz-vwe8/rows.csv?accessType=DOWNLOAD")
+library(tidyverse)
+install.packages("tidyverse")
+library(lubridate)
+```
+
+
+```{r clean, include=FALSE}
+shooting_his <- shooting_his %>%
+  select(-c(Longitude,New.Georeferenced.Column,X_COORD_CD,Y_COORD_CD, Latitude, LOCATION_DESC,))%>%
+  mutate(OCCUR_DATE = mdy(OCCUR_DATE))%>%
+  mutate(OCCUR_TIME = hms(OCCUR_TIME))
+```
+After that, a first summary of the data were run:
+```{r summary, echo=FALSE}
+summary(shooting_his)
+```
+
+## Ploting
+
+Firstly, is important to take a look and in the profile of the victims and the perpetrator, keeping in mind that second one was not always identifiable, there for the data is not complete.
+
+```{r profile, echo=FALSE}
+ggplot(shooting_his,aes(VIC_SEX, fill = VIC_RACE)) + geom_bar(position = "dodge")
+ggplot(shooting_his,aes(PERP_SEX, fill = PERP_RACE)) + geom_bar(position = "dodge")
+ggplot(shooting_his,aes(VIC_AGE_GROUP)) + geom_bar(fill="blue")
+ggplot(shooting_his,aes(PERP_AGE_GROUP)) + geom_bar(fill="blue")
+```
+
+Is interesting to observe that the Victims and the perpetrator have similar profile. Both are majority black males between the ages of 25-44. 
+
+Now, looking in to the crime itself we can obverse that most of them occur on Brooklyn and on the Bronx, with the their pick in July. However there isn't a direct relationship between the location of the shootings and the date.
+```{r crime, echo=FALSE}
+ggplot(shooting_his,aes(BORO)) + geom_bar(fill="blue")
+ggplot(shooting_his,aes(OCCUR_DATE)) + geom_freqpoly() 
+ggplot(shooting_his,aes(OCCUR_DATE,BORO)) + geom_jitter(height = 2, width = 2)
+```
+
+Also, observing the muder Flags, most shooting didn't result in death.
+```{r unlive, echo=FALSE}
+ggplot(shooting_his,aes(STATISTICAL_MURDER_FLAG)) + geom_bar(fill="blue")
+```
+
+## Avoiding Bias
+As observe in the data, most of the people involve in the shooting were Black male. This is in the expected range, since is a patter than repeated itself in violence statistics.A possible justification is that they represent the majority of the population. However, after consulting the 2021 census(2022 was not available), in the state of NY Black males only represent 6.8% of the population. Data can be founded at <https://data.census.gov/mdat/#/search?ds=ACSPUMS1Y2021&cv=SEX&rv=RACBLK&wt=PWGTP>. 
+## Suggestions
+After observing the data is possible to concluded that is similar social profile for this crimes, with this information the city should invest in program that help young black men, suck as sports center or programming classes. Also, the use of the geoanalyses should be taken in consideration when patrols are been assine. Lastly, is important to keep in mind the months with high violence risk, suck as July, schedduling patrol time off around that. 
